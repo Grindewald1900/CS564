@@ -48,10 +48,10 @@ RM = /cygdrive/c/Users/M1820/.CLion2019.3/system/cygwin_cmake/bin/cmake.exe -E r
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /cygdrive/d/desktop/CS/CS564/Assignments/untitled
+CMAKE_SOURCE_DIR = /cygdrive/d/desktop/CS/CS564/Assignments/Assignment1
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /cygdrive/d/desktop/CS/CS564/Assignments/untitled/cmake-build-debug
+CMAKE_BINARY_DIR = /cygdrive/d/desktop/CS/CS564/Assignments/Assignment1/cmake-build-debug
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,9 +80,9 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /cygdrive/d/desktop/CS/CS564/Assignments/untitled/cmake-build-debug/CMakeFiles /cygdrive/d/desktop/CS/CS564/Assignments/untitled/cmake-build-debug/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /cygdrive/d/desktop/CS/CS564/Assignments/Assignment1/cmake-build-debug/CMakeFiles /cygdrive/d/desktop/CS/CS564/Assignments/Assignment1/cmake-build-debug/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /cygdrive/d/desktop/CS/CS564/Assignments/untitled/cmake-build-debug/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /cygdrive/d/desktop/CS/CS564/Assignments/Assignment1/cmake-build-debug/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
