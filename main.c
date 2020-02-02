@@ -25,70 +25,82 @@
 
 int save_command(char *buffer);
 void error_output(int error_code,int flag);
-void safe_exit(char *buffer, char *file, int pid);
+void safe_exit(int pid);
 void get_filename(char *buffer, char *file);
 void output(FILE *fp);
 void run_more(char *filename);
 void  read_config();
 boolean string_cmp(char *buffer, char *str);
 void run_external(char *buffer);
-char *allocate_memory(char *m, int size,int flag);
+char *allocate_memory(char *m, int size);
 char *free_memory(char *m);
 char *string_combine(char *str1, char *str2);
 int string_num_collector(char *str);
+void print_pid(char *str);
 int readline(int fd, char* buf_str, size_t max);
 
 int v, h; //configuration for command more
+int pid = 1;
 
 int main(){
-    int pid = 1;
+
     size_t buffer_size = 0;
     boolean isBackground;
-    char *input_buffer = allocate_memory(input_buffer,MAX_COMMAND_SIZE,0);
-    char *file_name = allocate_memory(file_name,MAX_COMMAND_SIZE,0);
     printf("\nYou are using sshell made by team GCC...\n");
     read_config();
 
     while (true){
-        printf("\nGCC@sshell>");
+        char *input_buffer = allocate_memory(input_buffer,MAX_COMMAND_SIZE);
+        char *file_name = allocate_memory(file_name,MAX_COMMAND_SIZE);
+        print_pid("GCC@sshell>");
         if(save_command(input_buffer) == COMMAND_NORMAL){                     //command not oversize
-            printf("\n****Command:%s",input_buffer);
+            printf("Your command:%s",input_buffer);
             buffer_size = strlen(input_buffer);
             if(input_buffer[0] == '\n'){                           //if input is Enter, continue loop
+                free_memory(input_buffer);
+                free_memory(file_name);
                 continue;
             }
             if(string_cmp(input_buffer,"& ")){               //if command starts with '& '
-                printf("\nCommand running in the background...PID:%d\nPlease input 'Enter' to continue..." ,pid);
+                print_pid("\nCommand running in the background...");
                 for(int i=0; i<buffer_size-2; i++){              //remove prefix of command
                     input_buffer[i] = input_buffer[i+2];
                 }
                 input_buffer[buffer_size-2] = input_buffer[buffer_size-1] = ' ';
                 pid = fork();                                    //new process
                 if(pid != 0){                                    //parent process goes to the next loop, child process continues this loop
-                    printf("\n****Break!");
+                    print_pid("\nParent process break...");
+                    free_memory(input_buffer);
+                    free_memory(file_name);
                     continue;
                 }
                 isBackground = (pid==0 ? true : false );
             }
             if(string_cmp(input_buffer,EXIT)){                   //if command is 'exit'
+                free_memory(input_buffer);
+                free_memory(file_name);
                 break;
             } else if(string_cmp(input_buffer,MORE)){            //if command starts with 'more '
                 get_filename(input_buffer,file_name);
                 run_more(file_name);
             } else{
-                printf("\nSearching command in /bin and /usr/bin...");
+                print_pid("\nSearching command in /bin and /usr/bin...");
                 run_external(input_buffer);
             }
         } else{
+            free_memory(input_buffer);
+            free_memory(file_name);
             continue;                             //if command is oversize, goto next loop
         }
+        free_memory(input_buffer);
+        free_memory(file_name);
         while('\n' != getchar());
 //        getchar();
         if(pid == 0){                            //stop loop if child process has executed code above
             break;
         }
     }
-    safe_exit(input_buffer, file_name, pid);
+    safe_exit(pid);
 }
 
 /*
@@ -146,7 +158,7 @@ int string_num_collector(char *str){
  * combine two strings
  */
 char *string_combine(char *str1, char *str2){
-    char *result = allocate_memory(result,MAX_COMMAND_SIZE,1);
+    char *result = allocate_memory(result,MAX_COMMAND_SIZE);
     size_t s1 = strlen(str1);
     size_t s2 = strlen(str2);
     for(int i=0; i<s1; i++){
@@ -174,16 +186,16 @@ void run_more(char *filename){
             } else{
                 break;
             }
-            printf("\n>>Input blank to read more, others to quit!\n>>Then press 'Enter' to confirm your input...\n");
+            print_pid("\n>>Input blank to read more, others to quit!\n>>Then press 'Enter' to confirm your input...\n");
             scanf("%c",&input);
             while('\n' != ch){
                 scanf("%c",&ch);
             }
         }
         if(feof(fp)){
-            printf("End of file...\n");
+            print_pid("End of file...\n");
         }
-        printf(">>Command 'more' terminates...\n");
+        print_pid(">>Command 'more' terminates...\n");
         fclose(fp);
 //        system("stty icanon");
 //        system("stty echo");
@@ -203,10 +215,10 @@ void run_external(char *buffer){
     char *command[2];
     int p = 0;
     for(int a=0; a<MAX_ARGUMENTS; a++){
-        argv[a] = allocate_memory(argv[a],32,2);
+        argv[a] = allocate_memory(argv[a],32);
     }
-    command[0] = allocate_memory(command[0],MAX_COMMAND_SIZE,3);
-    command[1] = allocate_memory(command[1],MAX_COMMAND_SIZE,4);
+    command[0] = allocate_memory(command[0],MAX_COMMAND_SIZE);
+    command[1] = allocate_memory(command[1],MAX_COMMAND_SIZE);
     for(int i=0; i<size_cmd-1;i++){
         argv[s][p] = buffer[i];
         p++;
@@ -228,6 +240,9 @@ void run_external(char *buffer){
 //            count++;
 //        }
 //    }
+
+//    char *arg[] = {"10s",NULL};
+//    execve("sleep",arg,envp);
     command[0] = string_combine("/bin/",argv[0]);
     command[1] = string_combine("/usr/bin/",argv[0]);
     if(-1 == execve(command[0],argv,envp)){
@@ -245,9 +260,9 @@ void run_external(char *buffer){
 /*
  * allocate memory
  */
-char *allocate_memory(char *m, int size, int flag){
+char *allocate_memory(char *m, int size){
     m = (char*)malloc(size* sizeof(char));
-    NULL==m? error_output(NORMAL_ERROR, flag) : memset(m,0,size);
+    NULL==m? error_output(NORMAL_ERROR, pid) : memset(m,0,size);
     return m;
 }
 
@@ -287,19 +302,16 @@ void get_filename(char *buffer, char *file){
 /*
  * output some kinds of errors according to flag
  */
-void error_output(int error_code,int flag){
+void error_output(int error_code,int pid){
     switch(error_code){
         case COMMAND_OVERSIZE:
-            printf("\nError:Please input a command within 200 characters!");
+            print_pid("\nError:Please input a command within 200 characters!");
         case NORMAL_ERROR:
             perror("\nError:");
         case INPUT_ERROR:
-            printf("\nError:Something wrong with your input!");
+            print_pid("\nError:Something wrong with your input!");
         case COMMAND_NOT_FOUND:
-            printf("\nError: command not found!");
-//        case ALLOCATE_ERROR:
-//            perror("\nMalloc error");
-//            printf("\nFlag = %d",flag);
+            print_pid("\nError: command not found!");
         default:
             break;
     }
@@ -309,17 +321,17 @@ void error_output(int error_code,int flag){
 /*
  * clear the buffer and exit
  */
-void safe_exit(char *buffer, char *file, int pid){
-    if(NULL != buffer){
-        free(buffer);
-    }
-    if(NULL != file){
-        free(file);
-    }
+void safe_exit(int pid){
+//    if(NULL != buffer){
+//        free(buffer);
+//    }
+//    if(NULL != file){
+//        free(file);
+//    }
     if(pid == 0){
-        printf("\nChild process terminated...PID = %d",getpid());
+        printf("\nChild process terminated...");
     } else{
-        printf("\nMain process terminated normally...PID = %d",getpid());
+        printf("\nMain process terminated normally...");
     }
     exit(0);
 }
@@ -329,7 +341,7 @@ void safe_exit(char *buffer, char *file, int pid){
  */
 void  read_config(){
     printf("\nSearching configuration from shconfig...");
-    char *config = allocate_memory(config,32,5);
+    char *config = allocate_memory(config,32);
     int fd = open("shconfig.txt", O_RDONLY);
     if(-1 == fd){
         error_output(NORMAL_ERROR,0);
@@ -344,6 +356,15 @@ void  read_config(){
         }
     }
     printf("\nYour configuration: v = %d  h = %d\n",v,h);
+}
+
+void print_pid(char *str){
+    if(pid == 0){
+        printf("\nChild...PID : %d...",pid);
+    } else{
+        printf("\nParent...PID : %d...",pid);
+    }
+    printf(str);
 }
 
 /*
