@@ -2,15 +2,22 @@
 
 A simply shell which implements command 'more' and 'exit' internally and other command will be searched in directory /bin and /usr/bin.
 
+## Author
+
+Group G CC   
+
+Yi Ren (002269013), Wentao Lu (002276355)
+
+YREN19@UBishops.ca, WLU19@UBishops.ca
+
 ## Getting Started
 
-
+### Source code of the project
+https://github.com/Grindewald1900/CS564_A1
 
 ### Prerequisites
 
 GNU
-
-
 
 ## Running the tests
 
@@ -20,14 +27,56 @@ Start to input when you see prompt like this：
 ```
 Parent...PID : 934...GCC@sshell>
 ```
+Our program will read the config file(shconfig) to get the values for v and h:
+```
+Searching configuration from shconfig...
+Your configuration: v = 40  h = 75
+```
+Input  'more' + Space + Filename to show the content of the file(.txt)
+```
+Parent...PID : 934...GCC@sshell>more r.txt
+```
+The output should be like this (v lines with h characters per line):
 
-### Break down into end to end tests
+Note the PID here, it's initialed with 1 only to present it's not the child process. The real PID will be output until a child process is executed.
+```
+Parent...PID : 1...GCC@sshell>more r.txt
+Your command:more r.txt
 
-Explain what these tests test and why
+Rap God - Eminem
+Look I was gonna go easy on you and
+not to hurt your feelings
+But I’m only going to get this one chance
+...
+...
+...
+v lines totolly
+...
+...
+
+Parent...PID : 1...
+>>Input blank to read more, others to quit!
+>>Then press 'Enter' to confirm your input...
 
 ```
-Give an example
+
+Input blank to show more and other keys to stop this command.
 ```
+>>Input blank to read more, others to quit!
+>>Then press 'Enter' to confirm your input...
+a
+
+Parent...PID : 1...>>Command 'more' terminates...
+```
+Input 'exit' will terminate this program:
+```
+Parent...PID : 1...GCC@sshell>exit
+Your command:exit
+
+Main process terminated normally...
+Process finished with exit code 0
+```
+
 
 ### And coding style tests
 
