@@ -1,0 +1,2 @@
+VSIZE 40
+HSIZE 75
