@@ -14,7 +14,6 @@
 #define COMMAND_NOT_FOUND 102
 #define NORMAL_ERROR 200
 #define INPUT_ERROR 201
-#define ALLOCATE_ERROR 202
 
 #define MAX_COMMAND_SIZE 1024
 #define MAX_ARGUMENTS 32
@@ -45,48 +44,47 @@ int main(){
     int pid = 1;
     size_t buffer_size = 0;
     boolean isBackground;
-    char *input_buffer = malloc(MAX_COMMAND_SIZE);
-    char *file_name = malloc(MAX_COMMAND_SIZE);
-    NULL == file_name? error_output(NORMAL_ERROR,100) :memset(file_name,0,MAX_COMMAND_SIZE);
-    NULL == input_buffer?  error_output(NORMAL_ERROR,101) : memset(input_buffer,0,MAX_COMMAND_SIZE);
+    char *input_buffer = allocate_memory(input_buffer,MAX_COMMAND_SIZE,0);
+    char *file_name = allocate_memory(file_name,MAX_COMMAND_SIZE,0);
     printf("\nYou are using sshell made by team GCC...\n");
     read_config();
+
     while (true){
         printf("\nGCC@sshell>");
-        if(save_command(input_buffer) == COMMAND_NORMAL){
+        if(save_command(input_buffer) == COMMAND_NORMAL){                     //command not oversize
             printf("\n****Command:%s",input_buffer);
             buffer_size = strlen(input_buffer);
-            if(input_buffer[0] == '\n'){
+            if(input_buffer[0] == '\n'){                           //if input is Enter, continue loop
                 continue;
             }
-            if(string_cmp(input_buffer,"& ")){
-                printf("Command running in the background...PID:%d",pid);
-                for(int i=0; i<buffer_size-2; i++){
+            if(string_cmp(input_buffer,"& ")){               //if command starts with '& '
+                printf("\nCommand running in the background...PID:%d\nPlease input 'Enter' to continue..." ,pid);
+                for(int i=0; i<buffer_size-2; i++){              //remove prefix of command
                     input_buffer[i] = input_buffer[i+2];
                 }
                 input_buffer[buffer_size-2] = input_buffer[buffer_size-1] = ' ';
-                pid = fork();
-                if(pid != 0){
+                pid = fork();                                    //new process
+                if(pid != 0){                                    //parent process goes to the next loop, child process continues this loop
                     printf("\n****Break!");
                     continue;
                 }
                 isBackground = (pid==0 ? true : false );
             }
-            if(string_cmp(input_buffer,EXIT)){
+            if(string_cmp(input_buffer,EXIT)){                   //if command is 'exit'
                 break;
-            } else if(string_cmp(input_buffer,MORE)){
+            } else if(string_cmp(input_buffer,MORE)){            //if command starts with 'more '
                 get_filename(input_buffer,file_name);
                 run_more(file_name);
             } else{
-                printf("Searching command in /bin and /usr/bin...");
+                printf("\nSearching command in /bin and /usr/bin...");
                 run_external(input_buffer);
             }
         } else{
-            continue;
+            continue;                             //if command is oversize, goto next loop
         }
         while('\n' != getchar());
 //        getchar();
-        if(pid == 0){
+        if(pid == 0){                            //stop loop if child process has executed code above
             break;
         }
     }
@@ -94,7 +92,7 @@ int main(){
 }
 
 /*
- keep the user input in the buffer
+ *keep the user input in the buffer
  */
 int save_command(char *buffer){
     int n = 0, temp = 0;
@@ -127,6 +125,9 @@ boolean string_cmp(char *buffer, char *str){
     return true;
 }
 
+/*
+ * find and return the first number in a string
+ */
 int string_num_collector(char *str){
     size_t l = strlen(str);
     int p = 0;
@@ -141,6 +142,9 @@ int string_num_collector(char *str){
     return atoi(num);
 }
 
+/*
+ * combine two strings
+ */
 char *string_combine(char *str1, char *str2){
     char *result = allocate_memory(result,MAX_COMMAND_SIZE,1);
     size_t s1 = strlen(str1);
@@ -188,7 +192,9 @@ void run_more(char *filename){
 
 }
 
-
+/*
+ * do external commands in /bin and /usr/bin
+ */
 void run_external(char *buffer){
     int s = 0;
     size_t size_cmd = strlen(buffer);
@@ -236,12 +242,18 @@ void run_external(char *buffer){
     command[1] = free_memory(command[1]);
 }
 
+/*
+ * allocate memory
+ */
 char *allocate_memory(char *m, int size, int flag){
     m = (char*)malloc(size* sizeof(char));
     NULL==m? error_output(NORMAL_ERROR, flag) : memset(m,0,size);
     return m;
 }
 
+/*
+ * free memory
+ */
 char *free_memory(char *m){
     if(NULL != m){
         free(m);
@@ -254,6 +266,7 @@ char *free_memory(char *m){
  */
 void output(FILE *fp){
     char readline[h];
+    printf("\n");
     for(int i=0; i<v; i++){
         fgets(readline,h,fp);
         printf("%s",readline);
@@ -271,6 +284,9 @@ void get_filename(char *buffer, char *file){
     }
 }
 
+/*
+ * output some kinds of errors according to flag
+ */
 void error_output(int error_code,int flag){
     switch(error_code){
         case COMMAND_OVERSIZE:
@@ -290,6 +306,9 @@ void error_output(int error_code,int flag){
     printf("\nPress 'Enter' to continue...");
 }
 
+/*
+ * clear the buffer and exit
+ */
 void safe_exit(char *buffer, char *file, int pid){
     if(NULL != buffer){
         free(buffer);
@@ -305,6 +324,9 @@ void safe_exit(char *buffer, char *file, int pid){
     exit(0);
 }
 
+/*
+ * get the values of v and h from shconfig
+ */
 void  read_config(){
     printf("\nSearching configuration from shconfig...");
     char *config = allocate_memory(config,32,5);
