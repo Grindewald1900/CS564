@@ -8,13 +8,15 @@
 #include <stdbool.h>
 #include <sys/fcntl.h>
 #include "tools.h"
+#include <sys/types.h>
+#include <sys/wait.h>
 
 int save_command(char *buffer);
 void safe_exit(int pid);
 void get_filename(char *buffer, char *file);
 void run_more(char *filename);
 void read_config();
-void run_external(char *buffer);
+void run_external(char *buffer, int bg);
 void print_pid(char *str);
 
 int v, h; //configuration for command more
@@ -24,13 +26,14 @@ int main(){
     char *input_buffer;
     char *file_name;
     size_t buffer_size = 0;
-    printf("\nYou are using sshell made by team GCC...\n");
     read_config();
+    char* user = getenv("USER");
 
     while (true){
         input_buffer = allocate_memory(input_buffer,MAX_COMMAND_SIZE);
         file_name = allocate_memory(file_name,MAX_COMMAND_SIZE);
-        print_pid("GCC@sshell>");
+        int bg = 0;
+        printf("%s@sshell:~ > ", user);
         if(save_command(input_buffer) == COMMAND_NORMAL){                     //command not oversize
 //            printf("Your command:%s",input_buffer);
             buffer_size = strlen(input_buffer);
@@ -40,20 +43,15 @@ int main(){
                 continue;
             }
             if(string_cmp(input_buffer,"& ") == 1){               //if command starts with '& '
-                if(pid == 0){
-                    printf("\nCommand running in the background...");
-                }
+                bg = 1;
                 for(int i=0; i<buffer_size-2; i++){              //remove prefix of command
                     input_buffer[i] = input_buffer[i+2];
                 }
-                input_buffer[buffer_size-2] = input_buffer[buffer_size-1] = ' ';
-                pid = fork();                                    //new process
-                if(pid != 0){                                    //parent process goes to the next loop, child process continues this loop
-                    print_pid("\nParent process break...");
-                    free_memory(input_buffer);
-                    free_memory(file_name);
-                    continue;
-                }
+                input_buffer[buffer_size-2] = 0;
+                input_buffer[buffer_size-1] = 0;
+                printf("Command running in the background...\n");
+                run_external(input_buffer, bg);
+                continue;
             }
             if(string_cmp(input_buffer,EXIT) == 1){                   //if command is 'exit'
                 free_memory(input_buffer);
@@ -63,8 +61,9 @@ int main(){
                 get_filename(input_buffer,file_name);
                 run_more(file_name);
             } else{
-                print_pid("\nSearching command in /bin and /usr/bin...");
-                run_external(input_buffer);
+                // print_pid("\nSearching command in /bin and /usr/bin...");
+                run_external(input_buffer, bg);
+                continue;
             }
         } else{
             free_memory(input_buffer);
@@ -135,7 +134,7 @@ void run_more(char *filename){
 /*
  * do external commands in /bin and /usr/bin
  */
-void run_external(char *buffer){
+void run_external(char *buffer, int bg){
     int s = 0;
     size_t size_cmd = strlen(buffer);
     char *argv[MAX_ARGUMENTS];
@@ -153,8 +152,10 @@ void run_external(char *buffer){
         if(buffer[i] != ' ' && buffer[i+1] == ' '){
             s++;
             p = 0;
+            i++;
         }
     }
+    argv[s+1] = NULL;
 //    if(s>MAX_ARGUMENTS-1){
 //        error_output(INPUT_ERROR);
 //    } else{
@@ -173,11 +174,25 @@ void run_external(char *buffer){
 //    execve("sleep",arg,envp);
     command[0] = string_combine("/bin/",argv[0]);
     command[1] = string_combine("/usr/bin/",argv[0]);
-    if(-1 == execve(command[0],argv,envp)){
-        if( -1 == execve(command[1],argv,envp)){
-            error_output(COMMAND_NOT_FOUND);
+
+    int status;
+    pid_t childp = fork();
+    if (childp) {  // parent
+        if (bg == 0) {
+            waitpid(childp, &status, 0);  // child not in background, wait (sync)
+        } else {
+            // sleep(1);
+            return;
+        }
+    } else {  // child
+        sleep(0.5);
+        if(-1 == execve(command[0],argv,envp)){
+            if( -1 == execve(command[1],argv,envp)){
+                error_output(COMMAND_NOT_FOUND);
+            }
         }
     }
+
     for(int f=0; f<MAX_ARGUMENTS; f++){
         argv[f] = free_memory(argv[f]);
     }
@@ -212,7 +227,9 @@ void safe_exit(int pid){
  * get the values of v and h from shconfig
  */
 void  read_config(){
-    printf("\nSearching configuration from shconfig...");
+    printf("\033[H\033[J");
+    printf("You are using sshell made by team GCC...\n\n");
+    printf("Reading configuration from shconfig...\n");
     char *config = allocate_memory(config,32);
     int fd = open("shconfig.txt", O_RDONLY);
     if(-1 == fd){
@@ -229,6 +246,3 @@ void  read_config(){
     }
     printf("\nYour configuration: v = %d  h = %d\n",v,h);
 }
-
-
-
