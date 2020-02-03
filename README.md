@@ -2,7 +2,7 @@
 
 ## Overview
 
-A simply shell which implements command 'more' and 'exit' internally and other command will be searched in directory /bin and /usr/bin.
+A simply shell which implements command 'more' and 'exit' internally and other command will be searched in directory /bin and /usr/bin. Our program aslo support the prefix '& ' which indicates the command should be executed in the background.
 
 ## Authors
 
