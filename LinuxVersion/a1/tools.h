@@ -112,17 +112,20 @@ char *free_memory(char *m){
 void error_output(int error_code){
     switch(error_code){
         case COMMAND_OVERSIZE:
-            print_pid("\nError: Please input a command within 200 characters!");
+            print_pid("Error: Please input a command within 200 characters!");
+            break;
         case NORMAL_ERROR:
-            perror("\nError:");
+            perror("Error:");
         case INPUT_ERROR:
-            print_pid("\nError: Something wrong with your input!");
+            print_pid("Error: Something wrong with your input!");
+            break;
         case COMMAND_NOT_FOUND:
-            print_pid("\nError: command not found!");
+            print_pid("Error: command not found!");
+            break;
         default:
             break;
     }
-    printf("\nPress 'Enter' to continue...");
+    // printf("\nPress Enter to continue...");
 }
 
 /*
@@ -157,13 +160,12 @@ void output(FILE *fp, int v, int h){
 }
 
 void print_pid(char *str){
-    if(pid == 0){
-        printf("\nChild...PID : %d...",pid);
-    } else{
-        printf("\nParent...PID : %d...",pid);
-    }
-    printf(str);
+    // if(pid == 0){
+    //     printf("\nChild...PID : %d...",pid);
+    // } else{
+    //     printf("\nParent...PID : %d...",pid);
+    // }
+    printf("%s\n", str);
 }
 
 #endif //SSHELL_TOOLS_H
-
