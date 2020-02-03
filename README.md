@@ -2,7 +2,7 @@
 
 ## Overview
 
-A simply shell which implements command 'more' and 'exit' internally and other command will be searched in directory /bin and /usr/bin. Our program aslo support the prefix '& ' which indicates the command should be executed in the background.
+A simple shell which implements command 'more' and 'exit' internally and other command will be searched in directory /bin and /usr/bin. Our program aslo support the prefix '& ' which indicates the command should be executed in the background.
 
 ## Authors
 
@@ -24,8 +24,11 @@ Wentao Lu (002276355)
 ### Source code of the project
 https://github.com/Grindewald1900/CS564_A1
 
+Note that the Linux version to be submitted is in the file LinuxVersion/a1
+
 ### Prerequisites
 
+Linux
 GCC
 
 ## Program description
@@ -79,7 +82,9 @@ GCC
 
 ## Running the tests
 
-Run main.c
+Under Linux System, use make clean & make to build the executable program [sshell].
+
+Run sshell.
 
 Start to input when you see prompt like this：
 
