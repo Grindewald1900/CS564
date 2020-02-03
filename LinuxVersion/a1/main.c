@@ -33,7 +33,7 @@ int main(){
         input_buffer = allocate_memory(input_buffer,MAX_COMMAND_SIZE);
         file_name = allocate_memory(file_name,MAX_COMMAND_SIZE);
         int bg = 0;
-        printf("%s@sshell:~ > ", user);
+        printf("\n%s@sshell:~ > ", user);
         if(save_command(input_buffer) == COMMAND_NORMAL){                     //command not oversize
 //            printf("Your command:%s",input_buffer);
             buffer_size = strlen(input_buffer);
@@ -60,6 +60,7 @@ int main(){
             } else if(string_cmp(input_buffer,MORE) == 1){            //if command starts with 'more '
                 get_filename(input_buffer,file_name);
                 run_more(file_name);
+                continue;
             } else{
                 // print_pid("\nSearching command in /bin and /usr/bin...");
                 run_external(input_buffer, bg);
@@ -113,7 +114,7 @@ void run_more(char *filename){
             } else{
                 break;
             }
-            print_pid("\n>>Input blank to read more, others to quit!\n>>Then press 'Enter' to confirm your input...\n");
+            print_pid("\n>> Input blank to read more, others to quit!\n>> Then press 'Enter' to confirm your input...\n");
             scanf("%c",&input);
             while('\n' != ch){
                 scanf("%c",&ch);
@@ -175,20 +176,28 @@ void run_external(char *buffer, int bg){
     command[0] = string_combine("/bin/",argv[0]);
     command[1] = string_combine("/usr/bin/",argv[0]);
 
-    int status;
+    int status, last_status;
     pid_t childp = fork();
     if (childp) {  // parent
         if (bg == 0) {
             waitpid(childp, &status, 0);  // child not in background, wait (sync)
         } else {
-            // sleep(1);
             return;
         }
     } else {  // child
-        sleep(0.5);
+        if (bg == 1) {
+            pid_t last_child = fork();
+            if (last_child) {
+                waitpid(last_child, &last_status, 0);
+                printf("\nBackground command completed...\n");
+                printf("\n%s@sshell:~ > ", getenv("USER"));
+                exit(0);
+            }
+        }
         if(-1 == execve(command[0],argv,envp)){
             if( -1 == execve(command[1],argv,envp)){
                 error_output(COMMAND_NOT_FOUND);
+                exit(1);
             }
         }
     }
@@ -216,9 +225,9 @@ void get_filename(char *buffer, char *file){
  */
 void safe_exit(int pid){
     if(pid == 0){
-        printf("\nChild process...PID : %d...Terminated",pid);
+        printf("Bye!\n");
     } else{
-        printf("\nParent process...PID : %d... Terminated normally...",pid);
+        printf("Bye!\n");
     }
     exit(0);
 }
@@ -244,5 +253,5 @@ void  read_config(){
             v = string_num_collector(config);
         }
     }
-    printf("\nYour configuration: v = %d  h = %d\n",v,h);
+    printf("Your configuration: v = %d  h = %d\n\n",v,h);
 }
