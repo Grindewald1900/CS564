@@ -22,16 +22,18 @@ int v, h; //configuration for command more
 int pid = 1;
 
 int main(){
+    char *input_buffer;
+    char *file_name;
     size_t buffer_size = 0;
     printf("\nYou are using sshell made by team GCC...\n");
     read_config();
 
     while (true){
-        char *input_buffer = allocate_memory(input_buffer,MAX_COMMAND_SIZE);
-        char *file_name = allocate_memory(file_name,MAX_COMMAND_SIZE);
+        input_buffer = allocate_memory(input_buffer,MAX_COMMAND_SIZE);
+        file_name = allocate_memory(file_name,MAX_COMMAND_SIZE);
         print_pid("GCC@sshell>");
         if(save_command(input_buffer) == COMMAND_NORMAL){                     //command not oversize
-            printf("Your command:%s",input_buffer);
+//            printf("Your command:%s",input_buffer);
             buffer_size = strlen(input_buffer);
             if(input_buffer[0] == '\n'){                           //if input is Enter, continue loop
                 free_memory(input_buffer);
@@ -39,7 +41,9 @@ int main(){
                 continue;
             }
             if(string_cmp(input_buffer,"& ")){               //if command starts with '& '
-                print_pid("\nCommand running in the background...");
+                if(pid == 0){
+                    printf("\nCommand running in the background...");
+                }
                 for(int i=0; i<buffer_size-2; i++){              //remove prefix of command
                     input_buffer[i] = input_buffer[i+2];
                 }
@@ -120,7 +124,7 @@ void run_more(char *filename){
         if(feof(fp)){
             print_pid("End of file...\n");
         }
-        print_pid(">>Command 'more' terminates...\n");
+        print_pid("Command 'more' terminates...\n");
         fclose(fp);
 //        system("stty icanon");
 //        system("stty echo");
@@ -198,9 +202,9 @@ void get_filename(char *buffer, char *file){
  */
 void safe_exit(int pid){
     if(pid == 0){
-        printf("\nChild process terminated...");
+        printf("\nChild process...PID : %d...Terminated",pid);
     } else{
-        printf("\nMain process terminated normally...");
+        printf("\nParent process...PID : %d... Terminated normally...",pid);
     }
     exit(0);
 }

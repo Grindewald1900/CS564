@@ -2,13 +2,16 @@
 
 A simply shell which implements command 'more' and 'exit' internally and other command will be searched in directory /bin and /usr/bin.
 
-## Author
+## Authors
 
-Group G CC   
+###Group G CC   
 
-Yi Ren (002269013), Wentao Lu (002276355)
+### Yi Ren  (002269013)
+YREN19@UBishops.ca
 
-YREN19@UBishops.ca, WLU19@UBishops.ca
+
+### Wentao Lu (002276355)
+ WLU19@UBishops.ca
 
 ## Getting Started
 
@@ -17,7 +20,54 @@ https://github.com/Grindewald1900/CS564_A1
 
 ### Prerequisites
 
-GNU
+GCC
+
+## Program description
+### Main function overall
+* Read configuration from shconfig.
+* A while loop to get user input. 
+* If valid input,goto next step; else continue to next loop.
+* If input starts with '& ', run in background ; else goto next step.
+* If input is internal command('more' and 'exit'), goto the functions accordingly; else goto next stop.
+* Search the command in /bin and /usr/bin, if success ,do that command ; else goto next stop.
+
+````
+//pseudo-code 
+  
+ while (true){                     
+        ...
+        ...
+        if(save_command(input_buffer) == COMMAND_NORMAL){                     //command not oversize
+      
+            if(string_cmp(input_buffer,"& ")){               //if command starts with '& '
+
+                pid = fork();                                    //new process
+
+                if(pid != 0){                                    //parent process goes to the next loop, child process continues this loop
+                    continue;
+                }
+
+            }
+            if(string_cmp(input_buffer,EXIT)){                   //if command is 'exit'
+                ...
+                break;
+            } else if(string_cmp(input_buffer,MORE)){            //if command starts with 'more '
+                ...
+            } else{
+                ...
+                run_external(input_buffer);
+            }
+        } else{
+            ...
+            continue;                             //if command is oversize, goto next loop
+        }
+        if(pid == 0){                            //stop loop if child process has executed code above
+            break;
+        }
+    }
+
+    safe_exit(pid);
+````
 
 ## Running the tests
 
@@ -32,6 +82,7 @@ Our program will read the config file(shconfig) to get the values for v and h:
 Searching configuration from shconfig...
 Your configuration: v = 40  h = 75
 ```
+### 'more' + Space + Filename
 Input  'more' + Space + Filename to show the content of the file(.txt)
 ```
 Parent...PID : 934...GCC@sshell>more r.txt
@@ -59,7 +110,7 @@ Parent...PID : 1...
 >>Then press 'Enter' to confirm your input...
 
 ```
-
+### Space  
 Input blank to show more and other keys to stop this command.
 ```
 >>Input blank to read more, others to quit!
@@ -68,6 +119,31 @@ a
 
 Parent...PID : 1...>>Command 'more' terminates...
 ```
+
+###'& ' + command 
+To execute a certain command in the background.
+Note that when you use this concurrency, the output maybe disordered because of the system scheduling.
+````
+Parent...PID : 1...GCC@sshell>& more r.txt
+
+
+Parent...PID : 1434...
+Parent process break...
+Parent...PID : 1434...GCC@sshell>Rap God - Eminem
+Look I was gonna go easy on you and
+not to hurt your feelings
+...
+...
+v lines totally 
+...
+...
+
+Child...PID : 0...
+>>Input blank to read more, others to quit!
+>>Then press 'Enter' to confirm your input...
+
+````
+### Exit 
 Input 'exit' will terminate this program:
 ```
 Parent...PID : 1...GCC@sshell>exit
@@ -78,44 +154,18 @@ Process finished with exit code 0
 ```
 
 
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
 ## Deployment
 
 Add additional notes about how to deploy this on a live system
 
-## Built With
-
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
-
-## Authors
-
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
 ## Acknowledgments
+### Function readline()
+* Prototype : int readline(int fd, char* buf_str, size_t max)
+* Author : Professor Stefan D. Bruda
+* From : Lecture handout 03-api.pdf
 
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc

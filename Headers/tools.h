@@ -88,8 +88,14 @@ char *string_combine(char *str1, char *str2){
  */
 char *allocate_memory(char *m, int size){
     m = (char*)malloc(size* sizeof(char));
-    NULL==m? error_output(NORMAL_ERROR) : memset(m,0,size);
-    return m;
+    if(m == NULL){
+        error_output(NORMAL_ERROR);
+        exit(1);
+    } else{
+        memset(m,0,size);
+//        print_pid(m);
+        return m;
+    }
 }
 
 /*
@@ -108,11 +114,11 @@ char *free_memory(char *m){
 void error_output(int error_code){
     switch(error_code){
         case COMMAND_OVERSIZE:
-            print_pid("\nError:Please input a command within 200 characters!");
+            print_pid("\nError: Please input a command within 200 characters!");
         case NORMAL_ERROR:
             perror("\nError:");
         case INPUT_ERROR:
-            print_pid("\nError:Something wrong with your input!");
+            print_pid("\nError: Something wrong with your input!");
         case COMMAND_NOT_FOUND:
             print_pid("\nError: command not found!");
         default:
