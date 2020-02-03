@@ -5,10 +5,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-//#include <w32api/mqoai.h>
 #include <stdbool.h>
 #include <sys/fcntl.h>
-#include "Headers/tools.h"
+#include "tools.h"
 
 int save_command(char *buffer);
 void safe_exit(int pid);
@@ -40,7 +39,7 @@ int main(){
                 free_memory(file_name);
                 continue;
             }
-            if(string_cmp(input_buffer,"& ")){               //if command starts with '& '
+            if(string_cmp(input_buffer,"& ") == 1){               //if command starts with '& '
                 if(pid == 0){
                     printf("\nCommand running in the background...");
                 }
@@ -56,11 +55,11 @@ int main(){
                     continue;
                 }
             }
-            if(string_cmp(input_buffer,EXIT)){                   //if command is 'exit'
+            if(string_cmp(input_buffer,EXIT) == 1){                   //if command is 'exit'
                 free_memory(input_buffer);
                 free_memory(file_name);
                 break;
-            } else if(string_cmp(input_buffer,MORE)){            //if command starts with 'more '
+            } else if(string_cmp(input_buffer,MORE) == 1){            //if command starts with 'more '
                 get_filename(input_buffer,file_name);
                 run_more(file_name);
             } else{
@@ -221,10 +220,10 @@ void  read_config(){
         return;
     }
     while (0 != readline(fd,config,32)){
-        if(string_cmp(config, HSIZE)){
+        if(string_cmp(config, HSIZE) == 1){
             h = string_num_collector(config);
         }
-        if(string_cmp(config, VSIZE)){
+        if(string_cmp(config, VSIZE) == 1){
             v = string_num_collector(config);
         }
     }
