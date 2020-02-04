@@ -19,17 +19,31 @@ Wentao Lu (002276355)
  
  
 
-## Getting Started
+## File description
+### main.c
+Main program for this assignment.
+### tools.h
+Some functions implemented for this assignment( one of them is refered from Professor Bruda which had been indicated in the comment and README file).
+### r.txt
+A text file prepared for testing use.
+### shconfig.txt
+The config file required for this assignment.
+### makefile
+Some rules used to compile and link.
 
 ### Source code of the project
 https://github.com/Grindewald1900/CS564_A1
 
 Note that the Linux version to be submitted is in the file LinuxVersion/a1
 
+
+## Getting Started
 ### Prerequisites
 
 Linux
 GCC
+
+
 
 ## Program description
 ### Main function overall
