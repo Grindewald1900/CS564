@@ -78,118 +78,109 @@ GCC
     safe_exit(pid);
 ```
 
+### Concurrency overall
+* Use fork(), execve() and waitpid() to implement the concurrency.
 
+```cpp
+
+    bg = start_with '& ' ? 1 : 0;               //if the command need to fork twice
+    
+    pid_t childp = fork();
+
+    if (childp) {  // parent
+        if (bg == 0) {
+            waitpid(childp, &status, 0);  // child not in background, wait (sync)
+        } else {
+            return;
+        }
+    } else {  // child
+        if (bg == 1) {
+            pid_t last_child = fork();
+            if (last_child) {
+                waitpid(last_child, &last_status, 0);
+                exit(0);
+            }
+        }
+        if(-1 == execve(command[0],argv,envp)){
+            if( -1 == execve(command[1],argv,envp)){
+                exit(1);
+            }
+        }
+    }
+    
+```
 
 ## Running the tests
 
-Under Linux System, use make clean & make to build the executable program [sshell].
+* Under Linux System, use make clean & make to build the executable program [sshell].
 
-Run sshell.
+* Run sshell.
 
-Start to input when you see prompt like this：
+### Show the configuration automatically when the program starts.
+Our program will read the shconfig file to get value of v and h.
 
-```
-Parent...PID : 934...GCC@sshell>
-```
 
-Our program will read the config file(shconfig) to get the values for v and h:
+### Start to input when you see prompt like this
 
 ```
-Searching configuration from shconfig...
-Your configuration: v = 40  h = 75
+yren@sshell:~ >   
 ```
 
-### 'more' + Space + Filename
+### Command: 'more' + Space + Filename
 Input  'more' + Space + Filename to show the content of the file(.txt)
 
-```
-Parent...PID : 934...GCC@sshell>more r.txt
-```
+Note that you should put your file in our root directory.
 
-The output should be like this (v lines with h characters per line):
-
-Note the PID here, it's initialed with 1 only to present it's not the child process. The real PID will be output until a child process is executed.
+We have already attached a text file ( r.txt ) in the root directory for testing use 
 
 ```
-Parent...PID : 1...GCC@sshell>more r.txt
-Your command:more r.txt
-
-Rap God - Eminem
-Look I was gonna go easy on you and
-not to hurt your feelings
-But I’m only going to get this one chance
-...
-...
-...
-v lines totolly
-...
-...
-
-Parent...PID : 1...
->>Input blank to read more, others to quit!
->>Then press 'Enter' to confirm your input...
-
+yren@sshell:~ > more r.txt
 ```
 
-### Space  
-Input blank to show more and other keys to stop this command.
+The output should be v lines with h characters per line
 
-```
->>Input blank to read more, others to quit!
->>Then press 'Enter' to confirm your input...
-a
+### Command: Space + Enter to continue, other keys + Enter to quit 'more' command.
 
-Parent...PID : 1...>>Command 'more' terminates...
-```
-
-### '& ' + command 
+### Command: '& ' + command 
 
 To execute a certain command in the background.
-Note that when you use this concurrency, the output maybe disordered because of the system scheduling.
+
+For example, use command sleep to stop the child process.
+
+At the same time, input other command in the parent process.
+
+Our program will give you a prompt after the background process terminates.
 
 ````
-Parent...PID : 1...GCC@sshell>& more r.txt
+yren@sshell:~ > & sleep 10
+Command running in the background...
 
+yren@sshell:~ > ls
+README.md  main.c  main.o  makefile  r.txt  shconfig.txt  sshell  tools.h
 
-Parent...PID : 1434...
-Parent process break...
-Parent...PID : 1434...GCC@sshell>Rap God - Eminem
-Look I was gonna go easy on you and
-not to hurt your feelings
-...
-...
-v lines totally 
-...
-...
+yren@sshell:~ >
+Background command completed...
 
-Child...PID : 0...
->>Input blank to read more, others to quit!
->>Then press 'Enter' to confirm your input...
+yren@sshell:~ >
 
 ````
 
-### Exit 
-Input 'exit' will terminate this program:
-```
-Parent...PID : 1...GCC@sshell>exit
-Your command:exit
-
-Main process terminated normally...
-Process finished with exit code 0
-```
+### Command: Exit 
+Input 'exit' will terminate this program.
 
 
 
 ## Deployment
 
-Add additional notes about how to deploy this on a live system
+Use make clean and make to compile our program in the root directory (which contains the main.c and makefile).
 
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
-## Acknowledgments
+## Code reference 
+
 ### Function readline()
 * Prototype : int readline(int fd, char* buf_str, size_t max)
 * Author : Professor Stefan D. Bruda
