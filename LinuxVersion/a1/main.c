@@ -51,6 +51,8 @@ int main(){
                 input_buffer[buffer_size-1] = 0;
                 printf("Command running in the background...\n");
                 run_external(input_buffer, bg);
+                free_memory(input_buffer);
+                free_memory(file_name);
                 continue;
             }
             if(string_cmp(input_buffer,EXIT) == 1){                   //if command is 'exit'
@@ -60,22 +62,20 @@ int main(){
             } else if(string_cmp(input_buffer,MORE) == 1){            //if command starts with 'more '
                 get_filename(input_buffer,file_name);
                 run_more(file_name);
+                free_memory(input_buffer);
+                free_memory(file_name);
                 continue;
             } else{
                 // print_pid("\nSearching command in /bin and /usr/bin...");
                 run_external(input_buffer, bg);
+                free_memory(input_buffer);
+                free_memory(file_name);
                 continue;
             }
         } else{
             free_memory(input_buffer);
             free_memory(file_name);
             continue;                             //if command is oversize, goto next loop
-        }
-        free_memory(input_buffer);
-        free_memory(file_name);
-        while('\n' != getchar());
-        if(pid == 0){                            //stop loop if child process has executed code above
-            break;
         }
     }
     safe_exit(pid);
@@ -156,23 +156,11 @@ void run_external(char *buffer, int bg){
             i++;
         }
     }
+    if(s > MAX_COMMAND_SIZE - 2){
+        printf("\nToo much options input for this command...");
+        return;
+    }
     argv[s+1] = NULL;
-//    if(s>MAX_ARGUMENTS-1){
-//        error_output(INPUT_ERROR);
-//    } else{
-//        *argv[s+1] = NULL;     //argv[] should end with a NULL
-//    }
-//    char *argv0;
-//    size_argv0 = strlen(argv[0]);
-//    for(int j=0; j<size_argv0; j++){
-//        if(argv[0][j] != ' '){
-//            argv0[count] = argv[0][j];
-//            count++;
-//        }
-//    }
-
-//    char *arg[] = {"10s",NULL};
-//    execve("sleep",arg,envp);
     command[0] = string_combine("/bin/",argv[0]);
     command[1] = string_combine("/usr/bin/",argv[0]);
 
