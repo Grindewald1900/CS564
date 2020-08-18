@@ -1,0 +1,8 @@
+# Part of the solution for Assignment 1 (CS 464/564)
+# by Stefan Bruda.
+
+VSIZE 10
+HSIZE 30
+RHOST 10.18.0.22
+RPORT 9001
+
